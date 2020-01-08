@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.IdentityModel.Claims;
 using System.Threading.Tasks;
 using System.Web;
@@ -10,82 +9,53 @@ using Microsoft.Owin.Security.Cookies;
 using Microsoft.Owin.Security.OpenIdConnect;
 using Owin;
 using AzureADTest.Models;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.Owin.Security.ActiveDirectory;
 
 namespace AzureADTest
 {
     public partial class Startup
     {
-        private static string clientId = ConfigurationManager.AppSettings["ida:ClientId"];
-        private static string appKey = ConfigurationManager.AppSettings["ida:ClientSecret"];
-        private static string aadInstance = EnsureTrailingSlash(ConfigurationManager.AppSettings["ida:AADInstance"]);
-        private static string tenantId = ConfigurationManager.AppSettings["ida:TenantId"];
-        private static string postLogoutRedirectUri = ConfigurationManager.AppSettings["ida:PostLogoutRedirectUri"];
+        private static string strClientId = "18566f3c-966e-49f0-9d32-92edaa0bdd6e";
+        private static string strAppKey = "uF1gXcacJG5TaOHDbhTyuctQTuImUiE5fIOv28esiIU=";
+        private static string strInstance = "https://login.microsoftonline.com/";
+        private static string strTenantId = "8b67b292-ebf3-4d29-89a6-47f7971c2e16";
+        private static string strRedirectUri = "https://localhost:44358/";
 
-        private string authority = aadInstance + tenantId;
-        private static string graphResourceId = "https://graph.windows.net";
+        private string strAuthority = strInstance + strTenantId;
+        private static string strGraphResourceId = "https://graph.windows.net";
 
         public void ConfigureAuth(IAppBuilder app)
         {
-			//WindowsAzureActiveDirectoryBearerAuthenticationOptions options = new WindowsAzureActiveDirectoryBearerAuthenticationOptions
-			//                                                                 {
-			//                                                                  Tenant = ConfigurationManager.AppSettings["aad:Audience"],
-			//                                                                  TokenValidationParameters = new TokenValidationParameters
-			//                                                                  {
-			//                                                                            ValidAudience = ConfigurationManager.AppSettings["aad:Audience"]
-			//                                                                        }
-			//                                                                 };
-
-			//app.UseWindowsAzureActiveDirectoryBearerAuthentication(options);
-
-			app.SetDefaultSignInAsAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);
+	        app.SetDefaultSignInAsAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);
 
 			app.UseCookieAuthentication(new CookieAuthenticationOptions());
 
 			app.UseOpenIdConnectAuthentication(
 				new OpenIdConnectAuthenticationOptions
-				{
-					ClientId = clientId,
-					Authority = authority,
-					PostLogoutRedirectUri = postLogoutRedirectUri,
-					Notifications = new OpenIdConnectAuthenticationNotifications()
 					{
-						//
-						// If there is a code in the OpenID Connect response, redeem it for an access token and refresh token, and store those away.
-						//
-						AuthorizationCodeReceived = (context) =>
+						ClientId = strClientId,
+						Authority = strAuthority,
+						PostLogoutRedirectUri = strRedirectUri,
+						Notifications = new OpenIdConnectAuthenticationNotifications()
 						{
-							var code = context.Code;
-							ClientCredential credential = new ClientCredential(clientId, appKey);
-							string signedInUserID = context.AuthenticationTicket.Identity.FindFirst(ClaimTypes.NameIdentifier).Value;
-							AuthenticationContext authContext = new AuthenticationContext(authority, new ADALTokenCache(signedInUserID));
-							AuthenticationResult result = authContext.AcquireTokenByAuthorizationCodeAsync(
-							  code, new Uri(HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Path)), credential, graphResourceId).Result;
+							AuthorizationCodeReceived = (context) =>
+							{
+								var strCode = context.Code;
+								ClientCredential credential = new ClientCredential(strClientId, strAppKey);
+								string strSignedInUserID = context.AuthenticationTicket.Identity.FindFirst(ClaimTypes.NameIdentifier).Value;
+								AuthenticationContext authContext = new AuthenticationContext(strAuthority, new ADALTokenCache(strSignedInUserID));
+								AuthenticationResult result = authContext.AcquireTokenByAuthorizationCodeAsync(
+								  strCode, new Uri(HttpContext.Current.Request.Url.GetLeftPart(UriPartial.Path)), credential, strGraphResourceId).Result;
 
-							return Task.FromResult(0);
+								return Task.FromResult(0);
+							}
 						}
 					}
-				}
 				);
 
-			// This makes any middleware defined above this line run before the Authorization rule is applied in web.config
 			app.UseStageMarker(PipelineStage.Authenticate);
+
+			SamlConfiguration objSamlConfiguration = new SamlConfiguration();
+			//app.UseSaml2Authentication(objSamlConfiguration.CreateSaml2Options());
 		}
-
-        private static string EnsureTrailingSlash(string value)
-        {
-            if (value == null)
-            {
-                value = string.Empty;
-            }
-
-            if (!value.EndsWith("/", StringComparison.Ordinal))
-            {
-                return value + "/";
-            }
-
-            return value;
-        }
     }
 }

@@ -13,10 +13,8 @@ namespace AzureADTest
 	{
 		protected void Page_Load(object sender, EventArgs e)
 		{
-			IAppBuilder app = new AppBuilder();
-
 			Startup objStartup = new Startup();
-			objStartup.ConfigureAuth(app);
+			objStartup.Configuration(new AppBuilder());
 		}
 	}
 }

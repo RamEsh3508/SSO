@@ -58,9 +58,6 @@
                             <ul class="nav navbar-nav  navbar-right">
                                 <li><a href="~/UserInfo" runat="server">Hello, <%: Context.User.Identity.Name  %>!</a></li>
                                 <li>
-                                    <a href="~/LogIn" runat="server">LogIn</a>
-                                </li>
-                                <li>
                                     <asp:LoginStatus runat="server" LogoutAction="Redirect" LogoutText="Sign out"
                                         LogoutPageUrl="~/" OnLoggingOut="Unnamed_LoggingOut" />
                                 </li>
@@ -68,7 +65,7 @@
                         </LoggedInTemplate>
                         <AnonymousTemplate>
                             <ul class="nav navbar-nav  navbar-right">
-                             <li><asp:LinkButton Text="Sign in" runat="server" OnClick="Unnamed_Click" />
+                             <li><a id="A4" runat="server" href="~/LogIn">Sign in</a>
                              </li>
                             </ul>
                         </AnonymousTemplate>

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Configuration;
 using System.Security.Cryptography.X509Certificates;
 using System.Web.Hosting;
 using Sustainsys.Saml2;
@@ -14,8 +13,8 @@ namespace AzureADTest
 	{
 		public Saml2AuthenticationOptions CreateSaml2Options()
         {
-            string samlIdpUrl = ConfigurationManager.AppSettings["SAML_IDP_URL"];
-            string x509FileNamePath = ConfigurationManager.AppSettings["x509_File_Path"];
+            string samlIdpUrl = "http://localhost:44358/";
+            string x509FileNamePath = "~/App_Data/AzureADTest.cer";
  
             var spOptions = CreateSPOptions();
             var Saml2Options = new Saml2AuthenticationOptions(false)
@@ -23,7 +22,7 @@ namespace AzureADTest
                 SPOptions = spOptions
             };
  
-            var idp = new IdentityProvider(new EntityId(samlIdpUrl + "Metadata"), spOptions)
+            var idp = new IdentityProvider(new EntityId("https://sts.windows.net/8b67b292-ebf3-4d29-89a6-47f7971c2e16/"), spOptions)
             {
                 AllowUnsolicitedAuthnResponse = true,
                 Binding = Saml2BindingType.HttpRedirect,
@@ -34,29 +33,29 @@ namespace AzureADTest
                 new X509Certificate2(HostingEnvironment.MapPath(x509FileNamePath)));
  
             Saml2Options.IdentityProviders.Add(idp);
-            new Federation(samlIdpUrl + "Federation", true, Saml2Options);
+            new Federation(samlIdpUrl + "App_Data", true, Saml2Options);
  
             return Saml2Options;
         }
  
         private static SPOptions CreateSPOptions()
         {
-            string entityID = ConfigurationManager.AppSettings["Entity_ID"];
-            string serviceProviderReturnUrl = ConfigurationManager.AppSettings["ServiceProvider_Return_URL"];
-            string pfxFilePath = ConfigurationManager.AppSettings["Private_Key_File_Path"];
-            string samlIdpOrgName = ConfigurationManager.AppSettings["SAML_IDP_Org_Name"];
-            string samlIdpOrgDisplayName = ConfigurationManager.AppSettings["SAML_IDP_Org_Display_Name"];
+            string strEntityID = "https://sts.windows.net/8b67b292-ebf3-4d29-89a6-47f7971c2e16/";
+            string strServiceProviderReturnUrl = "http://localhost:44358/Default";
+            string strPfxFilePath = "/App_Data/Sustainsys.Saml2.Tests.pfx";
+            string strSamlIdpOrgName = "AzureADTest";
+            string strSamlIdpOrgDisplayName = "AzureADTest";
  
             var swedish = "sv-se";
             var organization = new Organization();
-            organization.Names.Add(new LocalizedName(samlIdpOrgName, swedish));
-            organization.DisplayNames.Add(new LocalizedName(samlIdpOrgDisplayName, swedish));
+            organization.Names.Add(new LocalizedName(strSamlIdpOrgName, swedish));
+            organization.DisplayNames.Add(new LocalizedName(strSamlIdpOrgDisplayName, swedish));
             organization.Urls.Add(new LocalizedUri(new Uri("http://www.Sustainsys.se"), swedish));
  
             var spOptions = new SPOptions
             {
-                EntityId = new EntityId(entityID),
-                ReturnUrl = new Uri(serviceProviderReturnUrl),
+                EntityId = new EntityId(strEntityID),
+                ReturnUrl = new Uri(strServiceProviderReturnUrl),
                 Organization = organization
             };
          
@@ -79,7 +78,7 @@ namespace AzureADTest
             spOptions.AttributeConsumingServices.Add(attributeConsumingService);
  
             spOptions.ServiceCertificates.Add(new X509Certificate2(
-                AppDomain.CurrentDomain.SetupInformation.ApplicationBase + pfxFilePath));
+                AppDomain.CurrentDomain.SetupInformation.ApplicationBase + strPfxFilePath));
  
             return spOptions;
         }

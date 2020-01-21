@@ -33,7 +33,7 @@ namespace AzureADTest
                 new X509Certificate2(HostingEnvironment.MapPath(x509FileNamePath)));
  
             Saml2Options.IdentityProviders.Add(idp);
-            new Federation(samlIdpUrl + "App_Data", true, Saml2Options);
+            new Federation(samlIdpUrl, true, Saml2Options);
  
             return Saml2Options;
         }
@@ -41,7 +41,7 @@ namespace AzureADTest
         private static SPOptions CreateSPOptions()
         {
             string strEntityID = "https://sts.windows.net/8b67b292-ebf3-4d29-89a6-47f7971c2e16/";
-            string strServiceProviderReturnUrl = "http://localhost:44358/Default";
+            string strServiceProviderReturnUrl = "https://ramesh.knowledgeowl.com/help/saml-login";
             string strPfxFilePath = "/App_Data/Sustainsys.Saml2.Tests.pfx";
             string strSamlIdpOrgName = "AzureADTest";
             string strSamlIdpOrgDisplayName = "AzureADTest";

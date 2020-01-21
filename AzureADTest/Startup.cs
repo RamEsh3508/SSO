@@ -2,6 +2,7 @@
 using Owin;
 
 [assembly: OwinStartup(typeof(AzureADTest.Startup))]
+
 namespace AzureADTest
 {
     public partial class Startup

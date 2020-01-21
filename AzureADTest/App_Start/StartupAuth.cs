@@ -37,7 +37,7 @@ namespace AzureADTest
 
         public void ConfigureAuth(IAppBuilder app)
         {
-			//OpenIdConfiguration(app);
+			OpenIdConfiguration(app);
 
 			//SamlConfiguration(app);
 
@@ -46,7 +46,7 @@ namespace AzureADTest
 
 			//OAuthConfiguration(app);
 
-			WSFederation(app);
+			//WSFederation(app);
         }
 
         private void OpenIdConfiguration(IAppBuilder app)
@@ -90,11 +90,30 @@ namespace AzureADTest
         {
 	        var spOptions = new SPOptions
 	                        {
-		                        EntityId = new EntityId("https://sts.windows.net/8b67b292-ebf3-4d29-89a6-47f7971c2e16/"),
-		                        ReturnUrl = new Uri("https://localhost:44358/"),
+								EntityId = new EntityId("https://sts.windows.net/8b67b292-ebf3-4d29-89a6-47f7971c2e16/"),
+								ReturnUrl = new Uri("https://localhost:44358/"),
 	                        };
 
-	        var Saml2Options = new Saml2AuthenticationOptions(false)
+	        var attributeConsumingService = new AttributeConsumingService
+	                                        {
+		                                        IsDefault = true,
+		                                        ServiceNames = { new LocalizedName("Saml2", "en") }
+	                                        };
+
+	        attributeConsumingService.RequestedAttributes.Add(
+	                                                          new RequestedAttribute("urn:password")
+	                                                          {
+		                                                          FriendlyName = "AzureADTest",
+		                                                          IsRequired = true,
+		                                                          NameFormat = RequestedAttribute.AttributeNameFormatUri
+	                                                          });
+
+	        attributeConsumingService.RequestedAttributes.Add(
+	                                                          new RequestedAttribute("Minimal"));
+
+	        spOptions.AttributeConsumingServices.Add(attributeConsumingService);
+
+			var Saml2Options = new Saml2AuthenticationOptions(false)
 	                           {
 		                           SPOptions = spOptions
 	                           };
@@ -138,9 +157,9 @@ namespace AzureADTest
 
         private void WSFederation(IAppBuilder app)
         {
-	        string strRealm = "https://MSAzure01.onmicrosoft.com/AzureADTest";
-			string strInstance = "https://login.microsoftonline.com";
-			string strTenant = "MSAzure01.onmicrosoft.com";
+	        const string strRealm = "https://MSAzure01.onmicrosoft.com/AzureADTest";
+			const string strInstance = "https://login.microsoftonline.com";
+			const string strTenant = "MSAzure01.onmicrosoft.com";
 			string strMetadata = $"{strInstance}/{strTenant}/federationmetadata/2007-06/federationmetadata.xml";
 
 			app.SetDefaultSignInAsAuthenticationType(CookieAuthenticationDefaults.AuthenticationType);
